@@ -5,3 +5,5 @@ from .junction_manhattan_for_xmon import JunctionManhattan
 from .junction_topdown import JunctionTopDown
 from .patch import Patch
 from .rectangle_patch import RectanglePatch
+from .good_taper import GoodTaper
+from .taper import Taper
