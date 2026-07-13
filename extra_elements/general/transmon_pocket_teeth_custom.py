@@ -331,11 +331,12 @@ class TransmonPocketTeethCustom(BaseQubit):
         # Done with utility functions in Metal 'draw_utility' for easy rotation/translation
         # NOTE: Should modify so rotate/translate accepts qgeometry, would allow for
         # smoother implementation.
+        
+        # additional pocket moving
+        rect_pk = draw.translate(rect_pk, p.pocket_dx, p.pocket_dy)
         polys = [rect_jj, pad_top, pad_bot, rect_pk]
         polys = draw.rotate(polys, p.orientation, origin=(0, 0))
         polys = draw.translate(polys, p.pos_x, p.pos_y)
-        # additional pocket moving
-        polys[-1] = draw.translate(polys[-1], p.pocket_dx, p.pocket_dy)
 
         if(p.mirror): polys = draw.scale(polys, xfact = -1)
         [rect_jj, pad_top, pad_bot, rect_pk] = polys
