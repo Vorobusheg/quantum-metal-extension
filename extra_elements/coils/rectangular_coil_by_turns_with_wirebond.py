@@ -9,10 +9,6 @@ from qiskit_metal import draw, Dict
 from qiskit_metal.qlibrary.core import QComponent
 import numpy as np
 
-from qiskit_metal import draw, Dict
-from qiskit_metal.qlibrary.core import QComponent
-import numpy as np
-
 class ResonatorCoilByTurnsWithWirebonds(QComponent):
     """A rectangular spiral resonator where the user can specify the inner diameter,
     the number of turns, the spacing between turns, and the wire width, height, and position.

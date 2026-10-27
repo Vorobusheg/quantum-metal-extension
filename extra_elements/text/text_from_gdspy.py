@@ -4,7 +4,6 @@
 
 from qiskit_metal import draw, Dict
 from qiskit_metal.qlibrary.core import QComponent
-import numpy as np
 from .fontpolylist import _font
 
 ## The polygons and some of the code here are copied from GDSPy code completely and utterly, so that is where the copyright of this part of the code lies

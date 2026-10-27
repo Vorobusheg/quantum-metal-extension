@@ -20,16 +20,34 @@ class Taper(QComponent):
         Convention: Values (unless noted) are strings with units included,
         (e.g., '30um')
 
-        * outer_width_in: '22um' -- Outer Width of the Input side
-        * width_in: '10um' -- Inner Width of the Input side
-        * outer_width_out: '220um' -- Outer Width of the Output side (Always keep output dimensions > input dimensions for proper offshooting)
-        * width_out: '100um' -- Inner Width of the Output side (Always keep output dimensions > input dimensions for proper offshooting)
-        * length: '300um' -- Length of the taper including the offshoots
-        * offshoot_out: '80um' --  Length of the offshoot of the outer part
-        * offshoot_in: '40um' --  Length of the offshoot of the inner part
-        * N_steps: '20' -- The number of linear steps in which one side of the taper is formed (Increase this for greater precision)
-        * subtract: 'False'
-        * helper: 'False'
+        *width_in='10um', width at the JJ edge
+        *width_mid='50um', width at the point of line and exponent merging
+        *width_out='100um', width at the pad edge
+        *length='300um', full taper length
+        *length_in='20um', length of line before merging with exponent
+        *length_cut='20um', cut coordinate along the taper axis
+        *slope='0.45', line slope (JJ direction)
+        *end_slope='0', end of circle slope (pad direction)
+        *primitive='0', if '1' keeps only linear edge ingnoring complecated shapes
+        *evaporation_angle='0', angle of evaporation direction
+        *evaporation_shift='0um', shift in respect to resist defined by resist high
+        *N_steps='100', steps for exponent smoothing
+        *undercut='0um', undercut width
+        *subtract='False',
+        *helper='False',
+        *draw='all', # can be 'all', 'in', 'out',
+        *layer='1',
+        *layer_undercut='4',
+        *datatype_main = '0',
+        *datatype_undercut='10',
+        
+        *  _default_hole=Dict(
+               pos_x='0um',
+               pos_y='0um',
+               orientation='0',
+               width='0um',
+               length='0um',
+               fillet='0um',
     """
 
     default_options = Dict(width_in='10um',
@@ -40,6 +58,7 @@ class Taper(QComponent):
                            length_cut='20um',
                            slope='0.45',
                            end_slope='0',
+                           primitive='0',
                            evaporation_angle='0',
                            evaporation_shift='0um',
                            N_steps='100',
@@ -48,7 +67,7 @@ class Taper(QComponent):
                            helper='False',
                            draw='all', # can be 'all', 'in', 'out',
                            layer='1',
-                           layer_undercut='1',
+                           layer_undercut='4',
                            datatype_main = '0',
                            datatype_undercut='10',
                            _default_hole=Dict(
@@ -77,7 +96,13 @@ class Taper(QComponent):
         # Create the geometry
         poly = []
 
-        if(p.end_slope==0):
+        if(p.primitive):
+            d_0 = p.width_in/2
+            s = p.slope
+            x_1 = p.length
+            d_1 = d_0 + s*x_1
+            
+        elif(p.end_slope==0):
             # circle ending
             d_0 = p.width_in/2
             d_2 = p.width_mid/2
@@ -117,56 +142,58 @@ class Taper(QComponent):
             if(x_1 < 0 or d_1 < 0): raise ValueError('Bad inputs, smoothing is impossible!')
                 
             alpha = np.log(k/s)/(x_2 - x_1)
-        
-        x_list = np.linspace(x_1, x_2, N)
-
-        list_curve_y = s/alpha*(np.exp(alpha*(x_list - x_1)) - 1) + d_1
-        list_curve_y = np.append(list_curve_y, list_curve_y[-1])
-        list_curve_y = np.append(list_curve_y, -np.flip(list_curve_y))
-        list_curve_y = np.append(list_curve_y, list_curve_y[0])
-        
-        x_list_out = np.append(x_list, p.length)
-        x_list_in = np.append(x_list, x_list[-1])
-        x_list_out = np.append(x_list_out, np.flip(x_list_out))
-        x_list_in = np.append(x_list_in, np.flip(x_list_in))
-        x_list_out = np.append(x_list_out, x_list_out[0])
-        x_list_in = np.append(x_list_in, x_list_in[0])
-
-        list_curve = np.vstack((x_list_in, list_curve_y)).T
-
-        list_curve = [tuple(row) for row in list_curve]
-
-        # exponential part
-        taper_main = draw.Polygon(list_curve)
 
         # linear part
         linear = draw.Polygon([(0, -d_0), (0, +d_0), (x_1, +d_1), (x_1, -d_1)])
-        taper_main = taper_main.union(linear)
-
-        if(p.end_slope==0):
-
-            # the rest part
-            rect = draw.rectangle(x_3-x_2, d_3*2, (x_3 + x_2)/2, 0)
-            
-            circ = draw.Point(x_3 - R, d_3).buffer(R, resolution=100)
-            circ = circ.intersection(rect)
-            rect = draw.subtract(rect, circ)
+        taper_main = linear
+        
+        if not p.primitive:
+        
+            x_list = np.linspace(x_1, x_2, N)
     
-            circ = draw.Point(x_3 - R, -d_3).buffer(R, resolution=100)
-            circ = circ.intersection(rect)
-            rect = draw.subtract(rect, circ)
+            list_curve_y = s/alpha*(np.exp(alpha*(x_list - x_1)) - 1) + d_1
+            list_curve_y = np.append(list_curve_y, list_curve_y[-1])
+            list_curve_y = np.append(list_curve_y, -np.flip(list_curve_y))
+            list_curve_y = np.append(list_curve_y, list_curve_y[0])
             
-            taper_main = taper_main.union(rect)
+            x_list_out = np.append(x_list, p.length)
+            x_list_in = np.append(x_list, x_list[-1])
+            x_list_out = np.append(x_list_out, np.flip(x_list_out))
+            x_list_in = np.append(x_list_in, np.flip(x_list_in))
+            x_list_out = np.append(x_list_out, x_list_out[0])
+            x_list_in = np.append(x_list_in, x_list_in[0])
+    
+            list_curve = np.vstack((x_list_in, list_curve_y)).T
+    
+            list_curve = [tuple(row) for row in list_curve]
+    
+            # exponential part
+            taper_main = taper_main.union(draw.Polygon(list_curve))
+            
+            if(p.end_slope==0):
 
-        # cutting
-        if(p.draw == 'out'):
-            rect = draw.rectangle(p.length-p.length_cut, p.width_out, (p.length + p.length_cut)/2, 0)
-            taper_main = taper_main.intersection(rect)
-        elif(p.draw == 'in'):
-            rect = draw.rectangle(p.length_cut, p.width_out, p.length_cut/2, 0)
-            taper_main = taper_main.intersection(rect)
-        elif(p.draw != 'all'):
-            raise ValueError('Incorrect draw!')
+                # the rest part
+                rect = draw.rectangle(x_3-x_2, d_3*2, (x_3 + x_2)/2, 0)
+                
+                circ = draw.Point(x_3 - R, d_3).buffer(R, resolution=100)
+                circ = circ.intersection(rect)
+                rect = draw.subtract(rect, circ)
+        
+                circ = draw.Point(x_3 - R, -d_3).buffer(R, resolution=100)
+                circ = circ.intersection(rect)
+                rect = draw.subtract(rect, circ)
+                
+                taper_main = taper_main.union(rect)
+
+            # cutting
+            if(p.draw == 'out'):
+                rect = draw.rectangle(p.length-p.length_cut, p.width_out, (p.length + p.length_cut)/2, 0)
+                taper_main = taper_main.intersection(rect)
+            elif(p.draw == 'in'):
+                rect = draw.rectangle(p.length_cut, p.width_out, p.length_cut/2, 0)
+                taper_main = taper_main.intersection(rect)
+            elif(p.draw != 'all'):
+                raise ValueError('Incorrect draw!')
 
         # subtracting holes
         for name in self.options.holes:
