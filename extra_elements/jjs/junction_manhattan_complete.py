@@ -26,11 +26,11 @@ def manhattan_complete(design, name, x, y, JJ_width, taper_gap, evaporation_shif
 
        # taper parameters
        slope : line slope at the JJ side (number)
-       length : taper length
+       length : taper length excluding crossing
        shifts_visual : add shifted versions of tapers to check compensations (default False)
        sym : if tapers are the same (default True)
        slope_l : slope of the lower taper (number, only for sym=False)
-       length_l : length of the lower taper (only for sym=False)
+       length_l : length of the lower taper (only for sym=False) excluding crossing
        crossing : width of the taper part which crosses with the big pad (like Nb one) 
                   (default 3*undercut + evaporation_shift/sqrt(2))
        patch_edge : distance between patch edge and taper edge (default evaporation_shift)
@@ -56,19 +56,20 @@ def manhattan_complete(design, name, x, y, JJ_width, taper_gap, evaporation_shif
     taper_gap = design.parse_value(taper_gap)
     evaporation_shift = design.parse_value(evaporation_shift)
     undercut = design.parse_value(undercut)
-    length = design.parse_value(length)
+
+    if crossing is None:
+        crossing = undercut*3 + evaporation_shift/np.sqrt(2)
+    else:
+        crossing = design.parse_value(crossing)
+        
+    length = design.parse_value(length) + crossing
 
     if sym:
         slope_l, length_l = slope, length
     elif slope_l is None or length_l is None:
         raise ValueError('sym=False needs slope_l and length_l')
     else:
-        length_l = design.parse_value(length_l)
-
-    if crossing is None:
-        crossing = undercut*3 + evaporation_shift/np.sqrt(2)
-    else:
-        crossing = design.parse_value(crossing)
+        length_l = design.parse_value(length_l) + crossing
 
     if patch_edge is None:
         patch_edge = evaporation_shift
@@ -141,8 +142,8 @@ def manhattan_complete(design, name, x, y, JJ_width, taper_gap, evaporation_shif
         #  trapezium patch cutted to triangle via hole option
         patch = Patch(design, f'{name}_patch_{side}', 
                       options=dict(pos_x=x, 
-                                   pos_y=y - asym_factor*(-H/2 + taper_gap/2 + length + evaporation_shift*(1 + 1/np.sqrt(2))),
-                                   orientation = orientation,
+                                   pos_y=y + asym_factor*(-H/2 + taper_gap/2 + length + evaporation_shift*(1 + 1/np.sqrt(2))),
+                                   orientation = f'{-asym_factor*90}',
                                    width=H,
                                    height=W - 2*H*slope,
                                    height_extra=W,

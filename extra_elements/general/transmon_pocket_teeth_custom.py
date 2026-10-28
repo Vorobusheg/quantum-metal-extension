@@ -129,6 +129,7 @@ class TransmonPocketTeethCustom(BaseQubit):
         round_edges=True,
         edge_rad_top='0um',
         edge_rad_bot='0um',
+        resolution='50',
         # orientation = 90 has dipole aligned along the +X axis, while 0 aligns to the +Y axis
         _default_connection_pads=Dict(
             coupled_pad_height='150um',
@@ -198,19 +199,19 @@ class TransmonPocketTeethCustom(BaseQubit):
             
         circ_left_top_1 = draw.Point(-pad_width_top / 2., edge_rad_top+pad_gap/
                                    2.).buffer(edge_rad_top,
-                                              resolution=50,
+                                              resolution=p.resolution,
                                               cap_style=CAP_STYLE.round)
         circ_right_top_1 = draw.Point(pad_width_top / 2., edge_rad_top+pad_gap/
                                     2.).buffer(edge_rad_top,
-                                               resolution=50,
+                                               resolution=p.resolution,
                                                cap_style=CAP_STYLE.round)
         circ_left_top_2 = draw.Point(-pad_width_top / 2., pad_height_top-edge_rad_top+pad_gap/
                                    2.).buffer(edge_rad_top,
-                                              resolution=50,
+                                              resolution=p.resolution,
                                               cap_style=CAP_STYLE.round)
         circ_right_top_2 = draw.Point(pad_width_top / 2., pad_height_top-edge_rad_top+pad_gap/
                                     2.).buffer(edge_rad_top,
-                                               resolution=50,
+                                               resolution=p.resolution,
                                                cap_style=CAP_STYLE.round)
         # In here you create the teeth part and then you union them as one with the pad. Teeth only belong to top pad.
         if(p.round_edges):
@@ -233,7 +234,7 @@ class TransmonPocketTeethCustom(BaseQubit):
                                      coupled_pad_height + pad_height_top)
                 coupler_pad_round = draw.Point(0., (coupled_pad_height + pad_height_top) /
                                                2).buffer(coupled_pad_width / 2,
-                                                         resolution=50,
+                                                         resolution=p.resolution,
                                                          cap_style=CAP_STYLE.round)
                 coupled_pad = draw.union(coupled_pad, coupler_pad_round)
                 coupled_pad_left = draw.translate(
@@ -251,7 +252,7 @@ class TransmonPocketTeethCustom(BaseQubit):
                     pad_top_tmp, coup_pads
                 ])
                 
-        pad_top = pad_top_tmp.buffer(p.fillet, resolution=50).buffer(-p.fillet, resolution=50).buffer(-p.fillet, resolution=50).buffer(p.fillet, resolution=50)
+        pad_top = pad_top_tmp.buffer(p.fillet, resolution=p.resolution).buffer(-p.fillet, resolution=p.resolution).buffer(-p.fillet, resolution=p.resolution).buffer(p.fillet, resolution=p.resolution)
         # Round part for the bottom pad. And again you should unite all of them.
         pad_bot = draw.translate(pad_bot, 0, -(pad_height_bot + pad_gap) / 2.)
 
@@ -262,19 +263,19 @@ class TransmonPocketTeethCustom(BaseQubit):
             
         circ_left_bot_1 = draw.Point(-pad_width_bot / 2., -(edge_rad_bot+pad_gap/
                                    2.)).buffer(edge_rad_bot,
-                                              resolution=50,
+                                              resolution=p.resolution,
                                               cap_style=CAP_STYLE.round)
         circ_right_bot_1 = draw.Point(pad_width_bot / 2., -(edge_rad_bot+pad_gap/
                                     2.)).buffer(edge_rad_bot,
-                                               resolution=50,
+                                               resolution=p.resolution,
                                                cap_style=CAP_STYLE.round)
         circ_left_bot_2 = draw.Point(-pad_width_bot / 2., -(pad_height_bot-edge_rad_bot+pad_gap/
                                    2.)).buffer(edge_rad_bot,
-                                              resolution=50,
+                                              resolution=p.resolution,
                                               cap_style=CAP_STYLE.round)
         circ_right_bot_2 = draw.Point(pad_width_bot / 2., -(pad_height_bot-edge_rad_bot+pad_gap/
                                     2.)).buffer(edge_rad_bot,
-                                               resolution=50,
+                                               resolution=p.resolution,
                                                cap_style=CAP_STYLE.round)
         if(p.round_edges):
             pad_bot_tmp = draw.union([circ_left_bot_1, circ_left_bot_2, pad_bot, circ_right_bot_1, circ_right_bot_2])
@@ -297,7 +298,7 @@ class TransmonPocketTeethCustom(BaseQubit):
                                      coupled_pad_height + pad_height_bot)
                 coupler_pad_round = draw.Point(0., (coupled_pad_height + pad_height_bot) /
                                                2).buffer(coupled_pad_width / 2,
-                                                         resolution=50,
+                                                         resolution=p.resolution,
                                                          cap_style=CAP_STYLE.round)
                 coupled_pad = draw.union(coupled_pad, coupler_pad_round)
                 coupled_pad_left = draw.translate(
@@ -316,16 +317,16 @@ class TransmonPocketTeethCustom(BaseQubit):
                     pad_bot_tmp, coup_pads
                 ])
                 
-        pad_bot = pad_bot_tmp.buffer(p.fillet, resolution=50).buffer(-p.fillet, resolution=50).buffer(-p.fillet, resolution=50).buffer(p.fillet, resolution=50)
+        pad_bot = pad_bot_tmp.buffer(p.fillet, resolution=p.resolution).buffer(-p.fillet, resolution=p.resolution).buffer(-p.fillet, resolution=p.resolution).buffer(p.fillet, resolution=p.resolution)
         rect_jj = draw.LineString([(0, -pad_gap / 2), (0, +pad_gap / 2)])
         # the draw.rectangle representing the josephson junction
         # rect_jj = draw.rectangle(p.inductor_width, pad_gap)
         pocket_fillet = min(p.pocket_width, p.pocket_height)/8
         rect_pk = draw.rectangle(p.pocket_width, p.pocket_height).buffer(pocket_fillet, 
-                                                                         resolution=50).buffer(-pocket_fillet, 
-                                                                                                resolution=50).buffer(-pocket_fillet, 
-                                                                                                                       resolution=50).buffer(pocket_fillet, 
-                                                                                                                                              resolution=50)
+                                                                         resolution=p.resolution).buffer(-pocket_fillet, 
+                                                                                                resolution=p.resolution).buffer(-pocket_fillet, 
+                                                                                                                       resolution=p.resolution).buffer(pocket_fillet, 
+                                                                                                                                              resolution=p.resolution)
 
         # Rotate and translate all qgeometry as needed.
         # Done with utility functions in Metal 'draw_utility' for easy rotation/translation
