@@ -14,7 +14,21 @@ class Taper(QComponent):
     Inherits `QComponent` class.
 
     Description:
-        A Geometrically Exponential Taper.
+        A Geometrically Exponential Taper. In case of end_slope=0 finished by circle
+        with essential variables:
+            - slope
+            - width_in
+            - width_mid
+            - width_out  
+            - length_in
+            - length
+            
+        for end_slope!=0 the essentials are:
+            - slope
+            - end_slope
+            - width_in
+            - width_out
+            - length
 
     Default Options:
         Convention: Values (unless noted) are strings with units included,
@@ -27,7 +41,7 @@ class Taper(QComponent):
         *length_in='20um', length of line before merging with exponent
         *length_cut='20um', cut coordinate along the taper axis
         *slope='0.45', line slope (JJ direction)
-        *end_slope='0', end of circle slope (pad direction)
+        *end_slope='0', slope at the ending (pad direction)
         *primitive='0', if '1' keeps only linear edge ingnoring complecated shapes
         *evaporation_angle='0', angle of evaporation direction
         *evaporation_shift='0um', shift in respect to resist defined by resist high
@@ -103,7 +117,7 @@ class Taper(QComponent):
             d_1 = d_0 + s*x_1
             
         elif(p.end_slope==0):
-            # circle ending
+            # circle ending pushses exponent slope to zero
             d_0 = p.width_in/2
             d_2 = p.width_mid/2
             d_3 = p.width_out/2
